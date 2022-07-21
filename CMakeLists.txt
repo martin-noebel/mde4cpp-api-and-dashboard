@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.22)
+project(Mde4cppApi)
+set(CMAKE_CXX_STANDARD 17)
+set(BOOST_ROOT "C:/Users/Uni/MDE4CPP/libs/boost_1_79_0/boost_1_79_0")
+find_package(Boost 1.79 REQUIRED)
+add_executable(Mde4cppApi main.cpp)
+target_link_libraries(Mde4cppApi PUBLIC Boost::boost PUBLIC ws2_32 PUBLIC wsock32)
