@@ -16,7 +16,9 @@ int main()
     std::shared_ptr<ecoreFactory> factory = ecoreFactory::eInstance();
     std::shared_ptr<EPackage> model = factory->createEPackage();
     crow::SimpleApp app;
-    //define your endpoint at the root directory
+    CROW_ROUTE(app, "/")([](){
+        return "Mde4cpp-Api and -Dashboard Home!!!";
+    });
     CROW_ROUTE(app, "/add/<string>")([factory, model](std::string className){
         std::shared_ptr<EClass> eClass = factory->createEClass_as_eClassifiers_in_EPackage(model);
         eClass->setName(className);

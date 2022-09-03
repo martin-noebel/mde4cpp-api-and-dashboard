@@ -1,12 +1,23 @@
+# general settings
 cmake_minimum_required(VERSION 3.9)
 project(Mde4cppApi)
-string(REPLACE "\\" "/" MDE4CPP_HOME $ENV{MDE4CPP_HOME})
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_FIND_LIBRARY_PREFIXES "")
+# set mde4cpp environment variable
+string(REPLACE "\\" "/" MDE4CPP_HOME $ENV{MDE4CPP_HOME})
+# set dll suffix for libraries
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
-include_directories(${MDE4CPP_HOME}/application/include)
-set(BOOST_ROOT "C:/Users/Uni/MDE4CPP/libs/boost_1_79_0/boost_1_79_0")
+# find ecore library
+find_library(ECORE ecore ${MDE4CPP_HOME}/application/bin)
+# find boost library
+set(BOOST_ROOT "C:/Program Files/boost_1_79_0")
 find_package(Boost 1.79 REQUIRED)
-find_library(ECORE_RELEASE ecore ${MDE4CPP_HOME}/application/bin)
-add_executable(${PROJECT_NAME} Main.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${ECORE_RELEASE} Boost::boost ws2_32 wsock32)
+if(Boost_FOUND AND ECORE)
+    # copy dll to build directory
+    file(COPY ${ECORE} DESTINATION ${PROJECT_BINARY_DIR})
+    # include the files
+    include_directories(${Boost_INCLUDE_DIRS} ${MDE4CPP_HOME}/application/include)
+    # add executable
+    add_executable(${PROJECT_NAME} Main.cpp)
+    # link boost, ecore and other libraries
+    target_link_libraries(${PROJECT_NAME} ${ECORE} ${Boost_LIBRARIES} ws2_32 wsock32)
+endif()
