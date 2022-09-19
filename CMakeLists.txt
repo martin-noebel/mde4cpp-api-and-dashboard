@@ -5,7 +5,7 @@ project(LibraryExample)
 set(CMAKE_CXX_STANDARD 17)
 string(REPLACE "\\" "/" MDE4CPP_HOME $ENV{MDE4CPP_HOME})
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
-set(BOOST_ROOT "C:/Program Files/boost_1_79_0")
+set(BOOST_ROOT "C:/Program Files/boost/boost_1_79_0")
 # find libraries
 find_library(ECORE ecore ${MDE4CPP_HOME}/application/bin)
 find_library(TYPES types ${MDE4CPP_HOME}/application/bin)
