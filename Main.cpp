@@ -1,31 +1,39 @@
-#include "include/crow_all.h"
+#include <iostream>
 #include "libraryModel_ecore/libraryModel_ecoreFactory.hpp"
-#include "ecore/EObject.hpp"
+#include "libraryModel_ecore/Book.hpp"
+#include "libraryModel_ecore/Author.hpp"
+#include "libraryModel_ecore/LibraryModel.hpp"
+#include "libraryModel_ecore/NamedElement.hpp"
+#include "libraryModel_ecore/Picture.hpp"
+#include "crow/crow_all.h"
 
-using namespace ecore;
 using namespace libraryModel_ecore;
-using namespace std;
 
-shared_ptr<libraryModel_ecoreFactory> factory = libraryModel_ecoreFactory::eInstance();
-map<string,shared_ptr<EObject>> objects{};
+std::map<std::string,std::shared_ptr<ecore::EObject>> objects{};
 
-int main()
+int main ()
 {
+    //Create Model Factory
+    std::shared_ptr<libraryModel_ecoreFactory> factory = libraryModel_ecoreFactory::eInstance();
+
+    //Base Route
     crow::SimpleApp app;
     CROW_ROUTE(app, "/")([](){
-        return "Mde4cpp-Api and -Dashboard Home!!!";
+        return "Mde4cpp-Api for libraryModel_ecore";
     });
-    CROW_ROUTE(app, "/objects").methods(crow::HTTPMethod::Get)([](){
-        auto result = string();
-        for(auto & object : objects){
-            result.append(object.first + ",");
-        }
-        if(!result.empty()){
-            result.pop_back();
-        }
-        return crow::response(200, result);
+
+    //Create function
+    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Post)([factory](const crow::request& request, const std::string& className, const std::string& objectName){
+        if(objects.find(objectName) != objects.end()){
+            return crow::response(400, "Object already exists!");
+        };
+        auto object = factory->create(className);
+        objects[objectName] = object;
+        return crow::response(201);
     });
-    CROW_ROUTE(app, "/objects/<string>").methods(crow::HTTPMethod::Get)([](string objectName){
+
+    //Read function
+    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Get)([factory](const std::string& className, const std::string& objectName){
         if(objects.find(objectName) == objects.end()){
             return crow::response(404);
         }
@@ -33,24 +41,9 @@ int main()
         auto result = factory->convertToString(nullptr, object->eAllContents());
         return crow::response(200, result);
     });
-    CROW_ROUTE(app, "/objects/<string>").methods(crow::HTTPMethod::Post)([](const crow::request& request, string objectName){
-        if(objects.find(objectName) != objects.end()){
-            return crow::response(400, "Object already exists!");
-        }
-        auto className = crow::json::load(request.body)["class"].s();
-        auto object = factory->create(className);
-        objects[objectName] = object;
-        auto result = factory->convertToString(nullptr, object->eAllContents());
-        return crow::response(201, result);
-    });
-    CROW_ROUTE(app, "/objects/<string>").methods(crow::HTTPMethod::Delete)([](string objectName){
-        if(objects.find(objectName) == objects.end()){
-            return crow::response(404);
-        }
-        objects.erase(objects.find(objectName));
-        return crow::response(204);
-    });
-    CROW_ROUTE(app, "/objects/<string>").methods(crow::HTTPMethod::Put)([](const crow::request& request, string objectName){
+
+    //Update function
+    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Put)([](const crow::request& request, const std::string& className, const std::string& objectName){
         if(objects.find(objectName) == objects.end()){
             return crow::response(404);
         }
@@ -61,5 +54,15 @@ int main()
         return crow::response(204);
     });
 
+    //Delete function
+    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Delete)([](const std::string& className, const std::string& objectName){
+        if(objects.find(objectName) == objects.end()){
+            return crow::response(404);
+        }
+        objects.erase(objects.find(objectName));
+        return crow::response(204);
+    });
+
     app.port(8080).multithreaded().run();
+    return 0;
 }
