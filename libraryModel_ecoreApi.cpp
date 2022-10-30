@@ -289,5 +289,241 @@ std::shared_ptr<ecore::EObject> libraryModel_ecoreApi::readValue(const crow::jso
 }
 
 crow::json::wvalue libraryModel_ecoreApi::writeValue(const std::shared_ptr<ecore::EObject>& object){
-    return nullptr;
+    auto result = crow::json::wvalue();
+    auto features = object->eClass()->getEAllStructuralFeatures();
+    for(const auto & feature : *features){
+        auto attributeTypeId = object->eGet(feature)->getTypeId();
+        auto isContainer = object->eGet(feature)->isContainer();
+        auto reference = std::dynamic_pointer_cast<EReference>(feature);
+        //Handle infinite recursion by ignoring backreferences
+        if(reference != nullptr && reference->getEOpposite() != nullptr && !reference->isContainment()){
+            continue;
+        }
+        //Switch type of the current feature
+        switch (attributeTypeId) {
+            // bool
+            case ecore::ecorePackage::EBOOLEANOBJECT_CLASS:
+            case ecore::ecorePackage::EBOOLEAN_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<bool>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = bag->at(j).get();
+                        list[j] = value;
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<bool>();
+                result[feature->getName()] = value;
+                break;
+            }
+                // char
+            case ecore::ecorePackage::EBYTE_CLASS:
+            case ecore::ecorePackage::EBYTEARRAY_CLASS:
+            case ecore::ecorePackage::EBYTEOBJECT_CLASS:
+            case ecore::ecorePackage::ECHARACTEROBJECT_CLASS:
+            case ecore::ecorePackage::ECHAR_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<char>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = bag->at(j).get();
+                        list[j] = value;
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<char>();
+                result[feature->getName()] = value;
+                break;
+            }
+                // int
+            case ecore::ecorePackage::EDATE_CLASS:
+            case ecore::ecorePackage::ERESOURCE_CLASS:
+            case ecore::ecorePackage::EINTEGEROBJECT_CLASS:
+            case ecore::ecorePackage::EBIGINTEGER_CLASS:
+            case ecore::ecorePackage::ESHORT_CLASS:
+            case ecore::ecorePackage::ESHORTOBJECT_CLASS:
+            case ecore::ecorePackage::EINT_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<int>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = bag->at(j).get();
+                        list[j] = value;
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<int>();
+                result[feature->getName()] = value;
+                break;
+            }
+                // long
+            case ecore::ecorePackage::ELONGOBJECT_CLASS:
+            case ecore::ecorePackage::ELONG_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<long>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = bag->at(j).get();
+                        list[j] = value;
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<long>();
+                result[feature->getName()] = value;
+                break;
+            }
+                // float
+            case ecore::ecorePackage::EFLOATOBJECT_CLASS:
+            case ecore::ecorePackage::EFLOAT_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<float>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = bag->at(j).get();
+                        list[j] = value;
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<float>();
+                result[feature->getName()] = value;
+                break;
+            }
+                // double
+            case ecore::ecorePackage::EBIGDECIMAL_CLASS:
+            case ecore::ecorePackage::EDOUBLE_CLASS:
+            case ecore::ecorePackage::EDOUBLEOBJECT_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<double>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = bag->at(j).get();
+                        list[j] = value;
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<double>();
+                result[feature->getName()] = value;
+                break;
+            }
+                //string
+            case ecore::ecorePackage::ESTRING_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<std::string>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = bag->at(j).get();
+                        list[j] = value;
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<std::string>();
+                result[feature->getName()] = value;
+                break;
+            }
+                // Library class
+            case libraryModel_ecore::libraryModel_ecorePackage::LIBRARYMODEL_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<LibraryModel>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = writeValue(bag->at(j));
+                        list[j] = std::move(value);
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<std::shared_ptr<LibraryModel>>();
+                result[feature->getName()] = writeValue(value);
+                break;
+            }
+                // Book class
+            case libraryModel_ecore::libraryModel_ecorePackage::BOOK_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<Book>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = writeValue(bag->at(j));
+                        list[j] = std::move(value);
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<std::shared_ptr<Book>>();
+                result[feature->getName()] = writeValue(value);
+                break;
+            }
+                // Author class
+            case libraryModel_ecore::libraryModel_ecorePackage::AUTHOR_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<Author>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = writeValue(bag->at(j));
+                        list[j] = std::move(value);
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<std::shared_ptr<Author>>();
+                result[feature->getName()] = writeValue(value);
+                break;
+            }
+                // Picture class
+            case libraryModel_ecore::libraryModel_ecorePackage::PICTURE_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<Picture>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = writeValue(bag->at(j));
+                        list[j] = std::move(value);
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<std::shared_ptr<Picture>>();
+                result[feature->getName()] = writeValue(value);
+                break;
+            }
+                // NamedElement class
+            case libraryModel_ecore::libraryModel_ecorePackage::NAMEDELEMENT_CLASS:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<NamedElement>>>();
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = writeValue(bag->at(j));
+                        list[j] = std::move(value);
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<std::shared_ptr<NamedElement>>();
+                result[feature->getName()] = writeValue(value);
+                break;
+            }
+                // undefined
+            default:
+                break;
+        }
+    }
+    return result;
 }
