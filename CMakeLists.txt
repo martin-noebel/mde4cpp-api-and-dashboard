@@ -7,7 +7,7 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_FLAGS "-Wall -Wno-overloaded-virtual -Wdeprecated-declarations -fmax-errors=5")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
 SET(BOOST_ROOT "C:/Program Files/boost")
-SET(SOURCE_FILES Main.cpp)
+SET(SOURCE_FILES Main.cpp libraryModel_ecoreApi.cpp)
 
 #Find packages and include directories
 FIND_PACKAGE(Boost)
