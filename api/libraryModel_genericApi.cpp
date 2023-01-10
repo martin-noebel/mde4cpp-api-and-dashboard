@@ -1,18 +1,18 @@
 #define CROW_JSON_USE_MAP
-#include "libraryModel_ecoreApi.hpp"
+#include "libraryModel_genericApi.hpp"
 
-std::shared_ptr<libraryModel_ecoreApi> libraryModel_ecoreApi::eInstance(std::shared_ptr<libraryModel_ecoreFactory> &factory, std::shared_ptr<libraryModel_ecorePackage> &package) {
-    static std::shared_ptr<libraryModel_ecoreApi> instance = std::make_shared<libraryModel_ecoreApi>(libraryModel_ecoreApi(factory, package));
+std::shared_ptr<libraryModel_genericApi> libraryModel_genericApi::eInstance(std::shared_ptr<libraryModel_ecoreFactory> &factory, std::shared_ptr<libraryModel_ecorePackage> &package, crow::SimpleApp& app) {
+    static std::shared_ptr<libraryModel_genericApi> instance = std::make_shared<libraryModel_genericApi>(libraryModel_genericApi(factory, package, app));
     return instance;
 }
 
-libraryModel_ecoreApi::libraryModel_ecoreApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package) {
+libraryModel_genericApi::libraryModel_genericApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package, crow::SimpleApp& app) {
     m_factory = factory;
     m_package = package;
+
     //Base Route
-    crow::SimpleApp app;
     CROW_ROUTE(app, "/")([](){
-        return "Mde4cpp-Api for libraryModel_ecore";
+        return "Generic API for MDE4CPP";
     });
 
     //Create function
@@ -54,11 +54,9 @@ libraryModel_ecoreApi::libraryModel_ecoreApi(std::shared_ptr<libraryModel_ecoreF
         m_objects.erase(m_objects.find(objectName));
         return crow::response(204);
     });
-
-    app.port(8080).multithreaded().run();
 }
 
-std::shared_ptr<ecore::EObject> libraryModel_ecoreApi::readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass){
+std::shared_ptr<ecore::EObject> libraryModel_genericApi::readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass){
     auto result = m_factory->create(eClass);
     auto features = result->eClass()->getEAllStructuralFeatures();
     for(const auto & feature : *features){
@@ -288,7 +286,7 @@ std::shared_ptr<ecore::EObject> libraryModel_ecoreApi::readValue(const crow::jso
     return result;
 }
 
-crow::json::wvalue libraryModel_ecoreApi::writeValue(const std::shared_ptr<ecore::EObject>& object){
+crow::json::wvalue libraryModel_genericApi::writeValue(const std::shared_ptr<ecore::EObject>& object){
     auto result = crow::json::wvalue();
     auto features = object->eClass()->getEAllStructuralFeatures();
     for(const auto & feature : *features){

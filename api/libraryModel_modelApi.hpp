@@ -15,15 +15,15 @@
 using namespace ecore;
 using namespace libraryModel_ecore;
 
-class libraryModel_ecoreApi{
+class libraryModel_modelApi{
 public:
-    static std::shared_ptr<libraryModel_ecoreApi> eInstance(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
-    std::shared_ptr<ecore::EObject> readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass);
-    crow::json::wvalue writeValue(const std::shared_ptr<ecore::EObject>& object);
+    static std::shared_ptr<libraryModel_modelApi> eInstance(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package, crow::SimpleApp& app);
+    Any readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass);
+    crow::json::wvalue writeValue(Any object);
 
 private:
-    libraryModel_ecoreApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
+    libraryModel_modelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package, crow::SimpleApp& app);
     std::shared_ptr<libraryModel_ecoreFactory> m_factory;
     std::shared_ptr<libraryModel_ecorePackage> m_package;
-    std::map<std::string,std::shared_ptr<ecore::EObject>> m_objects{};
+    std::map<std::string,Any> m_objects{};
 };
