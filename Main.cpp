@@ -11,9 +11,9 @@ int main ()
     std::shared_ptr<ecorePackage> ecorePackage = ecore::ecorePackage::eInstance();
 
     //Create APIs
-    std::shared_ptr<libraryModel_mixedApi> mixedApi = libraryModel_mixedApi::eInstance(libraryFactory, libraryPackage);
+    //std::shared_ptr<libraryModel_mixedApi> mixedApi = libraryModel_mixedApi::eInstance(libraryFactory, libraryPackage);
     //std::shared_ptr<libraryModel_modelApi> modelApi = libraryModel_modelApi::eInstance(libraryFactory, libraryPackage);
-    //std::shared_ptr<libraryModel_genericApi> genericApi = libraryModel_genericApi::eInstance(ecoreFactory, ecorePackage);
+    std::shared_ptr<libraryModel_genericApi> genericApi = libraryModel_genericApi::eInstance(ecoreFactory, ecorePackage);
 
     return 0;
 }
