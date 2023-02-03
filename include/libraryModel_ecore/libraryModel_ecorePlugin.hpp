@@ -10,7 +10,7 @@
 // namespace macro header include
 #include "libraryModel_ecore/libraryModel_ecore.hpp"
 
-#include "pluginFramework/EcoreModelPlugin.hpp"
+#include "ecore/EcoreModelPlugin.hpp"
 
 namespace libraryModel_ecore
 {

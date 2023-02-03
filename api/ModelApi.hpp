@@ -11,14 +11,14 @@
 using namespace ecore;
 using namespace libraryModel_ecore;
 
-class libraryModel_modelApi{
+class ModelApi{
 public:
-    static std::shared_ptr<libraryModel_modelApi> eInstance(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
+    static std::shared_ptr<ModelApi> eInstance(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
     Any readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass);
     crow::json::wvalue writeValue(const Any& any);
 
 private:
-    libraryModel_modelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
+    ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
     std::shared_ptr<libraryModel_ecoreFactory> m_factory;
     std::shared_ptr<libraryModel_ecorePackage> m_package;
     std::map<std::string,Any> m_objects{};

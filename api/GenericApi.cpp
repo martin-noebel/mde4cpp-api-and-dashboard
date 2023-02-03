@@ -1,14 +1,13 @@
 #define CROW_JSON_USE_MAP
-#include "libraryModel_mixedApi.hpp"
+#include "GenericApi.hpp"
 
-std::shared_ptr<libraryModel_mixedApi> libraryModel_mixedApi::eInstance(std::shared_ptr<libraryModel_ecoreFactory> &factory, std::shared_ptr<libraryModel_ecorePackage> &package) {
-    static std::shared_ptr<libraryModel_mixedApi> instance = std::make_shared<libraryModel_mixedApi>(libraryModel_mixedApi(factory, package));
+std::shared_ptr<GenericApi> GenericApi::eInstance(std::shared_ptr<MDE4CPPPlugin> &plugin) {
+    static std::shared_ptr<GenericApi> instance = std::make_shared<GenericApi>(GenericApi(plugin));
     return instance;
 }
 
-libraryModel_mixedApi::libraryModel_mixedApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package) {
-    m_factory = factory;
-    m_package = package;
+GenericApi::GenericApi(std::shared_ptr<MDE4CPPPlugin>& plugin) {
+    m_plugin = plugin;
     crow::SimpleApp app;
 
     //Base Route
@@ -21,7 +20,7 @@ libraryModel_mixedApi::libraryModel_mixedApi(std::shared_ptr<libraryModel_ecoreF
         if(m_objects.find(objectName) != m_objects.end()){
             return crow::response(400, "Object already exists!");
         }
-        auto object = readValue(crow::json::load(request.body), m_factory->create(className)->eClass());
+        auto object = readValue(crow::json::load(request.body), className);
         m_objects[objectName] = object;
         return crow::response(201);
     });
@@ -59,8 +58,8 @@ libraryModel_mixedApi::libraryModel_mixedApi(std::shared_ptr<libraryModel_ecoreF
     app.port(8080).multithreaded().run();
 }
 
-std::shared_ptr<ecore::EObject> libraryModel_mixedApi::readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass){
-    auto result = m_factory->create(eClass);
+std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& content, const std::string& eClass){
+    auto result = m_plugin->create(eClass);
     auto features = result->eClass()->getEAllStructuralFeatures();
     // Iterate over all features
     for(const auto & feature : *features){
@@ -202,95 +201,34 @@ std::shared_ptr<ecore::EObject> libraryModel_mixedApi::readValue(const crow::jso
                 result->eSet(feature, eAny(value, attributeTypeId, false));
                 break;
             }
-            // Library class
-            case libraryModel_ecorePackage::LIBRARYMODEL_CLASS:
-            {
-                if(isContainer){
-                    auto bag = result->eGet(feature)->get<std::shared_ptr<Bag<LibraryModel>>>();
-                    for(const auto & entry : content[feature->getName()]){
-                        auto value = readValue(entry, m_package->getLibraryModel_Class());
-                        bag->add(std::dynamic_pointer_cast<LibraryModel>(value));
-                    }
-                    result->eSet(feature, eAny(bag, attributeTypeId, true));
-                    break;
-                }
-                auto value = readValue(content[feature->getName()], m_package->getLibraryModel_Class());
-                result->eSet(feature, eAny(value, attributeTypeId, false));
-                break;
-            }
-            // Book class
-            case libraryModel_ecorePackage::BOOK_CLASS:
-            {
-                if(isContainer){
-                    auto bag = result->eGet(feature)->get<std::shared_ptr<Bag<Book>>>();
-                    for(const auto & entry : content[feature->getName()]){
-                        auto value = readValue(entry, m_package->getBook_Class());
-                        bag->add(std::dynamic_pointer_cast<Book>(value));
-                    }
-                    result->eSet(feature, eAny(bag, attributeTypeId, true));
-                    break;
-                }
-                auto value = readValue(content[feature->getName()], m_package->getBook_Class());
-                result->eSet(feature, eAny(value, attributeTypeId, false));
-                break;
-            }
-            // Author class
-            case libraryModel_ecorePackage::AUTHOR_CLASS:
-            {
-                if(isContainer){
-                    auto bag = result->eGet(feature)->get<std::shared_ptr<Bag<Author>>>();
-                    for(const auto & entry : content[feature->getName()]){
-                        auto value = readValue(entry, m_package->getAuthor_Class());
-                        bag->add(std::dynamic_pointer_cast<Author>(value));
-                    }
-                    result->eSet(feature, eAny(bag, attributeTypeId, true));
-                    break;
-                }
-                auto value = readValue(content[feature->getName()], m_package->getAuthor_Class());
-                result->eSet(feature, eAny(value, attributeTypeId, false));
-                break;
-            }
-            // Picture class
-            case libraryModel_ecorePackage::PICTURE_CLASS:
-            {
-                if(isContainer){
-                    auto bag = result->eGet(feature)->get<std::shared_ptr<Bag<Picture>>>();
-                    for(const auto & entry : content[feature->getName()]){
-                        auto value = readValue(entry, m_package->getPicture_Class());
-                        bag->add(std::dynamic_pointer_cast<Picture>(value));
-                    }
-                    result->eSet(feature, eAny(bag, attributeTypeId, true));
-                    break;
-                }
-                auto value = readValue(content[feature->getName()], m_package->getPicture_Class());
-                result->eSet(feature, eAny(value, attributeTypeId, false));
-                break;
-            }
-            // NamedElement class
-            case libraryModel_ecorePackage::NAMEDELEMENT_CLASS:
-            {
-                if(isContainer){
-                    auto bag = result->eGet(feature)->get<std::shared_ptr<Bag<NamedElement>>>();
-                    for(const auto & entry : content[feature->getName()]){
-                        auto value = readValue(entry, m_package->getNamedElement_Class());
-                        bag->add(std::dynamic_pointer_cast<NamedElement>(value));
-                    }
-                    result->eSet(feature, eAny(bag, attributeTypeId, true));
-                    break;
-                }
-                auto value = readValue(content[feature->getName()], m_package->getNamedElement_Class());
-                result->eSet(feature, eAny(value, attributeTypeId, false));
-                break;
-            }
-            // Undefined
+            // Object
             default:
+            {
+                if(isContainer){
+                    std::shared_ptr<Bag<EObject>> bag;
+                    try{
+                        bag = std::dynamic_pointer_cast<AnyEObjectBag>(result->eGet(feature))->getBag();
+                    } catch (std::runtime_error& error) {
+                        std::cout << error.what() << std::endl;
+                        bag = std::make_shared<Bag<EObject>>();
+                    }
+                    for(const auto & entry : content[feature->getName()]){
+                        auto value = readValue(entry, feature->getEType()->getName());
+                        bag->add(value);
+                    }
+                    result->eSet(feature, eAnyBag(bag, attributeTypeId));
+                    break;
+                }
+                auto value = readValue(content[feature->getName()], feature->getEType()->getName());
+                result->eSet(feature, eAny(value, attributeTypeId, false));
                 break;
+            }
         }
     }
     return result;
 }
 
-crow::json::wvalue libraryModel_mixedApi::writeValue(const std::shared_ptr<ecore::EObject>& object){
+crow::json::wvalue GenericApi::writeValue(const std::shared_ptr<ecore::EObject>& object){
     auto result = crow::json::wvalue();
     auto features = object->eClass()->getEAllStructuralFeatures();
     // Iterate over all features
@@ -438,94 +376,28 @@ crow::json::wvalue libraryModel_mixedApi::writeValue(const std::shared_ptr<ecore
                 result[feature->getName()] = value;
                 break;
             }
-            // Library class
-            case libraryModel_ecore::libraryModel_ecorePackage::LIBRARYMODEL_CLASS:
-            {
-                if(isContainer){
-                    auto list = crow::json::wvalue();
-                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<LibraryModel>>>();
-                    for (int j=0;j<bag->size();j++) {
-                        auto value = writeValue(bag->at(j));
-                        list[j] = std::move(value);
-                    }
-                    result[feature->getName()] = std::move(list);
-                    break;
-                }
-                auto value = object->eGet(feature)->get<std::shared_ptr<LibraryModel>>();
-                result[feature->getName()] = writeValue(value);
-                break;
-            }
-            // Book class
-            case libraryModel_ecore::libraryModel_ecorePackage::BOOK_CLASS:
-            {
-                if(isContainer){
-                    auto list = crow::json::wvalue();
-                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<Book>>>();
-                    for (int j=0;j<bag->size();j++) {
-                        auto value = writeValue(bag->at(j));
-                        list[j] = std::move(value);
-                    }
-                    result[feature->getName()] = std::move(list);
-                    break;
-                }
-                auto value = object->eGet(feature)->get<std::shared_ptr<Book>>();
-                result[feature->getName()] = writeValue(value);
-                break;
-            }
-            // Author class
-            case libraryModel_ecore::libraryModel_ecorePackage::AUTHOR_CLASS:
-            {
-                if(isContainer){
-                    auto list = crow::json::wvalue();
-                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<Author>>>();
-                    for (int j=0;j<bag->size();j++) {
-                        auto value = writeValue(bag->at(j));
-                        list[j] = std::move(value);
-                    }
-                    result[feature->getName()] = std::move(list);
-                    break;
-                }
-                auto value = object->eGet(feature)->get<std::shared_ptr<Author>>();
-                result[feature->getName()] = writeValue(value);
-                break;
-            }
-            // Picture class
-            case libraryModel_ecore::libraryModel_ecorePackage::PICTURE_CLASS:
-            {
-                if(isContainer){
-                    auto list = crow::json::wvalue();
-                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<Picture>>>();
-                    for (int j=0;j<bag->size();j++) {
-                        auto value = writeValue(bag->at(j));
-                        list[j] = std::move(value);
-                    }
-                    result[feature->getName()] = std::move(list);
-                    break;
-                }
-                auto value = object->eGet(feature)->get<std::shared_ptr<Picture>>();
-                result[feature->getName()] = writeValue(value);
-                break;
-            }
-            // NamedElement class
-            case libraryModel_ecore::libraryModel_ecorePackage::NAMEDELEMENT_CLASS:
-            {
-                if(isContainer){
-                    auto list = crow::json::wvalue();
-                    auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<NamedElement>>>();
-                    for (int j=0;j<bag->size();j++) {
-                        auto value = writeValue(bag->at(j));
-                        list[j] = std::move(value);
-                    }
-                    result[feature->getName()] = std::move(list);
-                    break;
-                }
-                auto value = object->eGet(feature)->get<std::shared_ptr<NamedElement>>();
-                result[feature->getName()] = writeValue(value);
-                break;
-            }
-            // Undefined
+            // Object
             default:
+            {
+                if(isContainer){
+                    auto list = crow::json::wvalue();
+                    std::shared_ptr<Bag<EObject>> bag;
+                    try{
+                        bag = std::dynamic_pointer_cast<AnyEObjectBag>(object->eGet(feature))->getBag();
+                    } catch (std::runtime_error& error) {
+                        bag = std::make_shared<Bag<EObject>>();
+                    }
+                    for (int j=0;j<bag->size();j++) {
+                        auto value = writeValue(bag->at(j));
+                        list[j] = std::move(value);
+                    }
+                    result[feature->getName()] = std::move(list);
+                    break;
+                }
+                auto value = object->eGet(feature)->get<std::shared_ptr<EObject>>();
+                result[feature->getName()] = writeValue(value);
                 break;
+            }
         }
     }
     return result;

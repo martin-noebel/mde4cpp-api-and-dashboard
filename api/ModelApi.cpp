@@ -1,12 +1,12 @@
 #define CROW_JSON_USE_MAP
-#include "libraryModel_modelApi.hpp"
+#include "ModelApi.hpp"
 
-std::shared_ptr<libraryModel_modelApi> libraryModel_modelApi::eInstance(std::shared_ptr<libraryModel_ecoreFactory> &factory, std::shared_ptr<libraryModel_ecorePackage> &package) {
-    static std::shared_ptr<libraryModel_modelApi> instance = std::make_shared<libraryModel_modelApi>(libraryModel_modelApi(factory, package));
+std::shared_ptr<ModelApi> ModelApi::eInstance(std::shared_ptr<libraryModel_ecoreFactory> &factory, std::shared_ptr<libraryModel_ecorePackage> &package) {
+    static std::shared_ptr<ModelApi> instance = std::make_shared<ModelApi>(ModelApi(factory, package));
     return instance;
 }
 
-libraryModel_modelApi::libraryModel_modelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package) {
+ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package) {
     m_factory = factory;
     m_package = package;
     crow::SimpleApp app;
@@ -59,7 +59,7 @@ libraryModel_modelApi::libraryModel_modelApi(std::shared_ptr<libraryModel_ecoreF
     app.port(8080).multithreaded().run();
 }
 
-Any libraryModel_modelApi::readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass){
+Any ModelApi::readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass){
     Any result;
     auto metaElementId = eClass->getMetaElementID();
     // Switch type of requested class
@@ -68,7 +68,7 @@ Any libraryModel_modelApi::readValue(const crow::json::rvalue& content, const st
         case libraryModel_ecorePackage::LIBRARYMODEL_CLASS:
         {
             auto value = m_factory->createLibraryModel();
-            result = eAny(value, libraryModel_ecorePackage::AUTHOR_CLASS, false);
+            result = eAny(value, libraryModel_ecorePackage::LIBRARYMODEL_CLASS, false);
             for(const auto& it : content["authors"]) {
                 value->getAuthors()->add(readValue(it, m_package->getAuthor_Class())->get<std::shared_ptr<Author>>());
             }
@@ -81,7 +81,7 @@ Any libraryModel_modelApi::readValue(const crow::json::rvalue& content, const st
         case libraryModel_ecorePackage::BOOK_CLASS:
         {
             auto value = m_factory->createBook();
-            result = eAny(value, libraryModel_ecorePackage::AUTHOR_CLASS, false);
+            result = eAny(value, libraryModel_ecorePackage::BOOK_CLASS, false);
             for(const auto& it : content["authors"]) {
                 value->getAuthors()->add(readValue(it, m_package->getAuthor_Class())->get<std::shared_ptr<Author>>());
             }
@@ -103,7 +103,7 @@ Any libraryModel_modelApi::readValue(const crow::json::rvalue& content, const st
         case libraryModel_ecorePackage::PICTURE_CLASS:
         {
             auto value = m_factory->createPicture();
-            result = eAny(value, libraryModel_ecorePackage::AUTHOR_CLASS, false);
+            result = eAny(value, libraryModel_ecorePackage::PICTURE_CLASS, false);
             value->setPageNumber(content["pageNumber"].i());
             value->setName(content["Name"].s());
             break;
@@ -112,7 +112,7 @@ Any libraryModel_modelApi::readValue(const crow::json::rvalue& content, const st
         case libraryModel_ecorePackage::NAMEDELEMENT_CLASS:
         {
             auto value = m_factory->createNamedElement();
-            result = eAny(value, libraryModel_ecorePackage::AUTHOR_CLASS, false);
+            result = eAny(value, libraryModel_ecorePackage::NAMEDELEMENT_CLASS, false);
             value->setName(content["Name"].s());
             break;
         }
@@ -126,7 +126,7 @@ Any libraryModel_modelApi::readValue(const crow::json::rvalue& content, const st
     return result;
 }
 
-crow::json::wvalue libraryModel_modelApi::writeValue(const Any& any){
+crow::json::wvalue ModelApi::writeValue(const Any& any){
     auto result = crow::json::wvalue();
     auto metaElementId = any->getTypeId();
     // Switch type of requested class
