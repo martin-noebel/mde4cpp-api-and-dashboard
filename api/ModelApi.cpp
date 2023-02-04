@@ -1,11 +1,13 @@
 #define CROW_JSON_USE_MAP
 #include "ModelApi.hpp"
 
+//singleton
 std::shared_ptr<ModelApi> ModelApi::eInstance(std::shared_ptr<libraryModel_ecoreFactory> &factory, std::shared_ptr<libraryModel_ecorePackage> &package) {
     static std::shared_ptr<ModelApi> instance = std::make_shared<ModelApi>(ModelApi(factory, package));
     return instance;
 }
 
+//constructor with api creation
 ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package) {
     m_factory = factory;
     m_package = package;
@@ -59,6 +61,69 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::sha
     app.port(8080).multithreaded().run();
 }
 
+//serialization
+crow::json::wvalue ModelApi::writeValue(const Any& any){
+    auto result = crow::json::wvalue();
+    auto metaElementId = any->getTypeId();
+    // Switch type of requested class
+    switch (metaElementId) {
+        // LibraryModel
+        case libraryModel_ecorePackage::LIBRARYMODEL_CLASS:
+        {
+            auto value = any->get<std::shared_ptr<LibraryModel>>();
+            for(int i=0;i<value->getAuthors()->size();i++){
+                result["authors"][i] = writeValue(eAny(value->getAuthors()->at(i), libraryModel_ecorePackage::AUTHOR_CLASS, false));
+            }
+            for(int i=0;i<value->getBook()->size();i++){
+                result["books"][i] = writeValue(eAny(value->getBook()->at(i), libraryModel_ecorePackage::BOOK_CLASS, false));
+            }
+            break;
+        }
+            // Book
+        case libraryModel_ecorePackage::BOOK_CLASS:
+        {
+            auto value = any->get<std::shared_ptr<Book>>();
+            for(int i=0;i<value->getAuthors()->size();i++){
+                result["authors"][i] = writeValue(eAny(value->getAuthors()->at(i), libraryModel_ecorePackage::AUTHOR_CLASS, false));
+            }
+            for(int i=0;i<value->getPictures()->size();i++){
+                result["pictures"][i] = writeValue(eAny(value->getPictures()->at(i), libraryModel_ecorePackage::PICTURE_CLASS, false));
+            }
+            result["Name"] = value->getName();
+            break;
+        }
+            // Author
+        case libraryModel_ecorePackage::AUTHOR_CLASS:
+        {
+            auto value = any->get<std::shared_ptr<Author>>();
+            result["Name"] = value->getName();
+            break;
+        }
+            // Picture
+        case libraryModel_ecorePackage::PICTURE_CLASS:
+        {
+            auto value = any->get<std::shared_ptr<Picture>>();
+            result["pageNumber"] = value->getPageNumber();
+            result["Name"] = value->getName();
+            break;
+        }
+            // NamedElement
+        case libraryModel_ecorePackage::NAMEDELEMENT_CLASS:
+        {
+            auto value = any->get<std::shared_ptr<NamedElement>>();
+            result["Name"] = value->getName();
+            break;
+        }
+        default:
+        {
+            result = nullptr;
+            break;
+        }
+    }
+    return result;
+}
+
+//deserialization
 Any ModelApi::readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass){
     Any result;
     auto metaElementId = eClass->getMetaElementID();
@@ -117,67 +182,6 @@ Any ModelApi::readValue(const crow::json::rvalue& content, const std::shared_ptr
             break;
         }
         // Undefined
-        default:
-        {
-            result = nullptr;
-            break;
-        }
-    }
-    return result;
-}
-
-crow::json::wvalue ModelApi::writeValue(const Any& any){
-    auto result = crow::json::wvalue();
-    auto metaElementId = any->getTypeId();
-    // Switch type of requested class
-    switch (metaElementId) {
-        // LibraryModel
-        case libraryModel_ecorePackage::LIBRARYMODEL_CLASS:
-        {
-            auto value = any->get<std::shared_ptr<LibraryModel>>();
-            for(int i=0;i<value->getAuthors()->size();i++){
-                result["authors"][i] = writeValue(eAny(value->getAuthors()->at(i), libraryModel_ecorePackage::AUTHOR_CLASS, false));
-            }
-            for(int i=0;i<value->getBook()->size();i++){
-                result["books"][i] = writeValue(eAny(value->getBook()->at(i), libraryModel_ecorePackage::BOOK_CLASS, false));
-            }
-            break;
-        }
-        // Book
-        case libraryModel_ecorePackage::BOOK_CLASS:
-        {
-            auto value = any->get<std::shared_ptr<Book>>();
-            for(int i=0;i<value->getAuthors()->size();i++){
-                result["authors"][i] = writeValue(eAny(value->getAuthors()->at(i), libraryModel_ecorePackage::AUTHOR_CLASS, false));
-            }
-            for(int i=0;i<value->getPictures()->size();i++){
-                result["pictures"][i] = writeValue(eAny(value->getPictures()->at(i), libraryModel_ecorePackage::PICTURE_CLASS, false));
-            }
-            result["Name"] = value->getName();
-            break;
-        }
-        // Author
-        case libraryModel_ecorePackage::AUTHOR_CLASS:
-        {
-            auto value = any->get<std::shared_ptr<Author>>();
-            result["Name"] = value->getName();
-            break;
-        }
-        // Picture
-        case libraryModel_ecorePackage::PICTURE_CLASS:
-        {
-            auto value = any->get<std::shared_ptr<Picture>>();
-            result["pageNumber"] = value->getPageNumber();
-            result["Name"] = value->getName();
-            break;
-        }
-        // NamedElement
-        case libraryModel_ecorePackage::NAMEDELEMENT_CLASS:
-        {
-            auto value = any->get<std::shared_ptr<NamedElement>>();
-            result["Name"] = value->getName();
-            break;
-        }
         default:
         {
             result = nullptr;

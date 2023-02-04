@@ -14,8 +14,8 @@ using namespace libraryModel_ecore;
 class ModelApi{
 public:
     static std::shared_ptr<ModelApi> eInstance(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
-    Any readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass);
     crow::json::wvalue writeValue(const Any& any);
+    Any readValue(const crow::json::rvalue& content, const std::shared_ptr<ecore::EClass>& eClass);
 
 private:
     ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
