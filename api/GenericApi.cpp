@@ -10,11 +10,6 @@ GenericApi::GenericApi(std::shared_ptr<MDE4CPPPlugin>& plugin) {
     m_plugin = plugin;
     crow::SimpleApp app;
 
-    //Base Route
-    CROW_ROUTE(app, "/")([](){
-        return "Generic API for MDE4CPP";
-    });
-
     //Create function
     CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Post)([this](const crow::request& request, const std::string& className, const std::string& objectName){
         if(m_objects.find(objectName) != m_objects.end()){
@@ -52,6 +47,29 @@ GenericApi::GenericApi(std::shared_ptr<MDE4CPPPlugin>& plugin) {
         }
         m_objects.erase(m_objects.find(objectName));
         return crow::response(204);
+    });
+
+    //create instance model
+    CROW_ROUTE(app, "/").methods(crow::HTTPMethod::Post)([this](const crow::request& request){
+        for(const auto & entry : crow::json::load(request.body)){
+            auto object = readValue(entry, entry["ecore_type"].s());
+            m_objects[entry["ecore_identifier"].s()] = object;
+        }
+        return crow::response(201);
+    });
+
+    //get instance model
+    CROW_ROUTE(app, "/").methods(crow::HTTPMethod::Get)([this](){
+        crow::json::wvalue result;
+        int i = 0;
+        for(const auto & object : m_objects){
+            auto wvalue = writeValue(object.second);
+            wvalue["ecore_identifier"] = object.first;
+            wvalue["ecore_type"] = object.second->eClass()->getName();
+            result[i] = std::move(wvalue);
+            i++;
+        }
+        return crow::response(200, result);
     });
 
     app.port(8080).multithreaded().run();
@@ -165,7 +183,10 @@ std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& 
     auto features = result->eClass()->getEAllStructuralFeatures();
     for(const auto & feature : *features){
         try {
-            content[feature->getName()];
+            auto value = content[feature->getName()];
+            if(value.t() == crow::json::type::Null){
+                continue;
+            }
         } catch (std::runtime_error& error){
             continue;
         }
