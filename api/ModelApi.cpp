@@ -121,11 +121,15 @@ Any ModelApi::readValue(const crow::json::rvalue& content, const std::shared_ptr
         {
             auto value = m_factory->createLibraryModel();
             result = eAny(value, libraryModel_ecorePackage::LIBRARYMODEL_CLASS, false);
-            for(const auto& it : content["authors"]) {
-                value->getAuthors()->add(readValue(it, m_package->getAuthor_Class())->get<std::shared_ptr<Author>>());
+            if(keyIsAvailable(content, "authors")){
+                for(const auto& it : content["authors"]) {
+                    value->getAuthors()->add(readValue(it, m_package->getAuthor_Class())->get<std::shared_ptr<Author>>());
+                }
             }
-            for(const auto& it : content["books"]) {
-                value->getBook()->add(readValue(it, m_package->getBook_Class())->get<std::shared_ptr<Book>>());
+            if(keyIsAvailable(content, "books")){
+                for(const auto& it : content["books"]) {
+                    value->getBook()->add(readValue(it, m_package->getBook_Class())->get<std::shared_ptr<Book>>());
+                }
             }
             break;
         }
@@ -133,35 +137,49 @@ Any ModelApi::readValue(const crow::json::rvalue& content, const std::shared_ptr
         {
             auto value = m_factory->createBook();
             result = eAny(value, libraryModel_ecorePackage::BOOK_CLASS, false);
-            for(const auto& it : content["authors"]) {
-                value->getAuthors()->add(readValue(it, m_package->getAuthor_Class())->get<std::shared_ptr<Author>>());
+            if(keyIsAvailable(content, "authors")){
+                for(const auto& it : content["authors"]) {
+                    value->getAuthors()->add(readValue(it, m_package->getAuthor_Class())->get<std::shared_ptr<Author>>());
+                }
             }
-            for(const auto& it : content["pictures"]) {
-                value->getPictures()->add(readValue(it, m_package->getPicture_Class())->get<std::shared_ptr<Picture>>());
+            if(keyIsAvailable(content, "pictures")){
+                for(const auto& it : content["pictures"]) {
+                    value->getPictures()->add(readValue(it, m_package->getPicture_Class())->get<std::shared_ptr<Picture>>());
+                }
             }
-            value->setName(convert_to<std::string>(content["Name"]));
+            if(keyIsAvailable(content, "Name")){
+                value->setName(convert_to<std::string>(content["Name"]));
+            }
             break;
         }
         case libraryModel_ecorePackage::AUTHOR_CLASS:
         {
             auto value = m_factory->createAuthor();
             result = eAny(value, libraryModel_ecorePackage::AUTHOR_CLASS, false);
-            value->setName(convert_to<std::string>(content["Name"]));
+            if(keyIsAvailable(content, "Name")){
+                value->setName(convert_to<std::string>(content["Name"]));
+            }
             break;
         }
         case libraryModel_ecorePackage::PICTURE_CLASS:
         {
             auto value = m_factory->createPicture();
             result = eAny(value, libraryModel_ecorePackage::PICTURE_CLASS, false);
-            value->setPageNumber(convert_to<int>(content["pageNumber"]));
-            value->setName(convert_to<std::string>(content["Name"]));
+            if(keyIsAvailable(content, "pageNumber")){
+                value->setPageNumber(convert_to<int>(content["pageNumber"]));
+            }
+            if(keyIsAvailable(content, "Name")){
+                value->setName(convert_to<std::string>(content["Name"]));
+            }
             break;
         }
         case libraryModel_ecorePackage::NAMEDELEMENT_CLASS:
         {
             auto value = m_factory->createNamedElement();
             result = eAny(value, libraryModel_ecorePackage::NAMEDELEMENT_CLASS, false);
-            value->setName(convert_to<std::string>(content["Name"]));
+            if(keyIsAvailable(content, "Name")){
+                value->setName(convert_to<std::string>(content["Name"]));
+            }
             break;
         }
         default:
@@ -171,6 +189,15 @@ Any ModelApi::readValue(const crow::json::rvalue& content, const std::shared_ptr
         }
     }
     return result;
+}
+
+bool ModelApi::keyIsAvailable(const crow::json::rvalue& content, const std::string& key){
+    try{
+        content[key];
+        return true;
+    }catch (std::runtime_error& error){
+        return false;
+    }
 }
 
 //generic conversion methods for json

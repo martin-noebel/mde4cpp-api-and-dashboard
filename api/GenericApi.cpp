@@ -61,6 +61,9 @@ crow::json::wvalue GenericApi::writeValue(const std::shared_ptr<ecore::EObject>&
     auto result = crow::json::wvalue();
     auto features = object->eClass()->getEAllStructuralFeatures();
     for(const auto & feature : *features){
+        if(object == nullptr){
+            continue;
+        }
         auto attributeTypeId = object->eGet(feature)->getTypeId();
         auto isContainer = object->eGet(feature)->isContainer();
         auto reference = std::dynamic_pointer_cast<EReference>(feature);
@@ -161,6 +164,11 @@ std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& 
     auto result = m_plugin->create(eClass);
     auto features = result->eClass()->getEAllStructuralFeatures();
     for(const auto & feature : *features){
+        try {
+            content[feature->getName()];
+        } catch (std::runtime_error& error){
+            continue;
+        }
         auto attributeTypeId = result->eGet(feature)->getTypeId();
         auto isContainer = result->eGet(feature)->isContainer();
         auto reference = std::dynamic_pointer_cast<EReference>(feature);
@@ -258,7 +266,7 @@ Any GenericApi::readFeature(const std::shared_ptr<EObject>& object, const std::s
     if(isContainer){
         auto bag = object->eGet(feature)->get<std::shared_ptr<Bag<T>>>();
         for(const auto & entry : content[feature->getName()]){
-            auto value = std::make_shared<T>(convert_to<T>(content));
+            auto value = std::make_shared<T>(convert_to<T>(entry));
             bag->add(value);
         }
         return eAny(bag, attributeTypeId, true);
