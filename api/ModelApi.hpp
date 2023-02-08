@@ -19,6 +19,7 @@ public:
 
 private:
     ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
+    template <typename T> T convert_to(const crow::json::rvalue& value);
     std::shared_ptr<libraryModel_ecoreFactory> m_factory;
     std::shared_ptr<libraryModel_ecorePackage> m_package;
     std::map<std::string,Any> m_objects{};

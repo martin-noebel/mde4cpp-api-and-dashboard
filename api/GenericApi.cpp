@@ -1,20 +1,18 @@
 #define CROW_JSON_USE_MAP
 #include "GenericApi.hpp"
 
-//singleton
 std::shared_ptr<GenericApi> GenericApi::eInstance(std::shared_ptr<MDE4CPPPlugin> &plugin) {
     static std::shared_ptr<GenericApi> instance = std::make_shared<GenericApi>(GenericApi(plugin));
     return instance;
 }
 
-//constructor with api creation
 GenericApi::GenericApi(std::shared_ptr<MDE4CPPPlugin>& plugin) {
     m_plugin = plugin;
     crow::SimpleApp app;
 
     //Base Route
     CROW_ROUTE(app, "/")([](){
-        return "Mde4cpp-Api for libraryModel_ecore";
+        return "Generic API for MDE4CPP";
     });
 
     //Create function
@@ -41,11 +39,10 @@ GenericApi::GenericApi(std::shared_ptr<MDE4CPPPlugin>& plugin) {
         if(m_objects.find(objectName) == m_objects.end()){
             return crow::response(404);
         }
-        auto newName = crow::json::load(request.body)["newName"].s();
-        auto entry = m_objects.extract(objectName);
-        entry.key() = newName;
-        m_objects.insert(std::move(entry));
-        return crow::response(204);
+        m_objects.erase(m_objects.find(objectName));
+        auto object = readValue(crow::json::load(request.body), className);
+        m_objects[objectName] = object;
+        return crow::response(200);
     });
 
     //Delete function
@@ -60,21 +57,17 @@ GenericApi::GenericApi(std::shared_ptr<MDE4CPPPlugin>& plugin) {
     app.port(8080).multithreaded().run();
 }
 
-//serialization
 crow::json::wvalue GenericApi::writeValue(const std::shared_ptr<ecore::EObject>& object){
     auto result = crow::json::wvalue();
     auto features = object->eClass()->getEAllStructuralFeatures();
-    // Iterate over all features
     for(const auto & feature : *features){
         auto attributeTypeId = object->eGet(feature)->getTypeId();
         auto isContainer = object->eGet(feature)->isContainer();
         auto reference = std::dynamic_pointer_cast<EReference>(feature);
-        // Handle infinite recursion by ignoring backreferences
         if(reference != nullptr && reference->getEOpposite() != nullptr && !reference->isContainment()){
             continue;
         }
         crow::json::wvalue newValue;
-        // Switch type of the current feature
         switch (attributeTypeId) {
             // Bool
             case ecore::ecorePackage::EBOOLEANOBJECT_CLASS:
@@ -164,21 +157,17 @@ crow::json::wvalue GenericApi::writeFeature(const std::shared_ptr<EObject> &obje
     return crow::json::wvalue(object->eGet(feature)->get<T>());
 }
 
-//deserialization
 std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& content, const std::string& eClass){
     auto result = m_plugin->create(eClass);
     auto features = result->eClass()->getEAllStructuralFeatures();
-    // Iterate over all features
     for(const auto & feature : *features){
         auto attributeTypeId = result->eGet(feature)->getTypeId();
         auto isContainer = result->eGet(feature)->isContainer();
         auto reference = std::dynamic_pointer_cast<EReference>(feature);
-        // Handle infinite recursion by ignoring backreferences
         if(reference != nullptr && reference->getEOpposite() != nullptr && !reference->isContainment()){
             continue;
         }
         Any newValue;
-        // Switch type of the current feature
         switch (attributeTypeId) {
             // Bool
             case ecore::ecorePackage::EBOOLEANOBJECT_CLASS:
