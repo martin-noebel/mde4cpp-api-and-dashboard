@@ -52,7 +52,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EEnumLiteral: virtual public ENamedElement
+	class ECORE_API EEnumLiteral : virtual public ENamedElement
 	{
 		public:
  			EEnumLiteral(const EEnumLiteral &) {}
@@ -78,8 +78,8 @@ namespace ecore
 			//*********************************
 			// Attribute Getters & Setters
 			//*********************************
-			virtual Any getInstance() const = 0;
-			virtual void setInstance (Any _instance)= 0;
+			virtual std::shared_ptr<Any> getInstance() const = 0;
+			virtual void setInstance (std::shared_ptr<Any> _instance)= 0;
 			virtual std::string getLiteral() const = 0;
 			virtual void setLiteral (std::string _literal)= 0;
 			virtual int getValue() const = 0;
@@ -93,7 +93,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter
@@ -111,7 +110,7 @@ namespace ecore
 			//*********************************
 			// Attribute Members
 			//*********************************
-			Any m_instance= nullptr;
+			std::shared_ptr<Any> m_instance= nullptr;
 			std::string m_literal= "";
 			int m_value= 0;
 			

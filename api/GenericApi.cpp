@@ -83,7 +83,6 @@ crow::json::wvalue GenericApi::writeValue(const std::shared_ptr<ecore::EObject>&
             continue;
         }
         auto attributeTypeId = object->eGet(feature)->getTypeId();
-        auto isContainer = object->eGet(feature)->isContainer();
         auto reference = std::dynamic_pointer_cast<EReference>(feature);
         if(reference != nullptr && reference->getEOpposite() != nullptr && !reference->isContainment()){
             continue;
@@ -138,23 +137,7 @@ crow::json::wvalue GenericApi::writeValue(const std::shared_ptr<ecore::EObject>&
                 // Object
             default:
             {
-                if(isContainer){
-                    auto list = crow::json::wvalue();
-                    std::shared_ptr<Bag<EObject>> bag;
-                    try{
-                        bag = std::dynamic_pointer_cast<AnyEObjectBag>(object->eGet(feature))->getBag();
-                    } catch (std::runtime_error& error) {
-                        bag = std::make_shared<Bag<EObject>>();
-                    }
-                    for (int j=0;j<bag->size();j++) {
-                        auto value = writeValue(bag->at(j));
-                        list[j] = std::move(value);
-                    }
-                    newValue = std::move(list);
-                    break;
-                }
-                auto value = object->eGet(feature)->get<std::shared_ptr<EObject>>();
-                newValue = writeValue(value);
+                //TODO: fix bags
                 break;
             }
         }
@@ -191,17 +174,15 @@ std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& 
             continue;
         }
         auto attributeTypeId = result->eGet(feature)->getTypeId();
-        auto isContainer = result->eGet(feature)->isContainer();
         auto reference = std::dynamic_pointer_cast<EReference>(feature);
         if(reference != nullptr && reference->getEOpposite() != nullptr && !reference->isContainment()){
             continue;
         }
-        Any newValue;
         switch (attributeTypeId) {
             // Bool
             case ecore::ecorePackage::EBOOLEANOBJECT_CLASS:
             case ecore::ecorePackage::EBOOLEAN_CLASS:
-                newValue = readFeature<bool>(result, feature, content);
+                result->eSet(feature, readFeature<bool>(result, feature, content));
                 break;
             // Char
             case ecore::ecorePackage::EBYTE_CLASS:
@@ -209,7 +190,7 @@ std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& 
             case ecore::ecorePackage::EBYTEOBJECT_CLASS:
             case ecore::ecorePackage::ECHARACTEROBJECT_CLASS:
             case ecore::ecorePackage::ECHAR_CLASS:
-                newValue = readFeature<char>(result, feature, content);
+                result->eSet(feature, readFeature<char>(result, feature, content));
                 break;
             // Int
             case ecore::ecorePackage::EDATE_CLASS:
@@ -219,52 +200,35 @@ std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& 
             case ecore::ecorePackage::ESHORT_CLASS:
             case ecore::ecorePackage::ESHORTOBJECT_CLASS:
             case ecore::ecorePackage::EINT_CLASS:
-                newValue = readFeature<int>(result, feature, content);
+                result->eSet(feature, readFeature<int>(result, feature, content));
                 break;
             // Long
             case ecore::ecorePackage::ELONGOBJECT_CLASS:
             case ecore::ecorePackage::ELONG_CLASS:
-                newValue = readFeature<long>(result, feature, content);
+                result->eSet(feature, readFeature<long>(result, feature, content));
                 break;
             // Float
             case ecore::ecorePackage::EFLOATOBJECT_CLASS:
             case ecore::ecorePackage::EFLOAT_CLASS:
-                newValue = readFeature<float>(result, feature, content);
+                result->eSet(feature, readFeature<float>(result, feature, content));
                 break;
             // Double
             case ecore::ecorePackage::EBIGDECIMAL_CLASS:
             case ecore::ecorePackage::EDOUBLE_CLASS:
             case ecore::ecorePackage::EDOUBLEOBJECT_CLASS:
-                newValue = readFeature<double>(result, feature, content);
+                result->eSet(feature, readFeature<double>(result, feature, content));
                 break;
             // String
             case ecore::ecorePackage::ESTRING_CLASS:
-                newValue = readFeature<std::string>(result, feature, content);
+                result->eSet(feature, readFeature<std::string>(result, feature, content));
                 break;
             // Object
             default:
             {
-                if(isContainer){
-                    std::shared_ptr<Bag<EObject>> bag;
-                    try{
-                        bag = std::dynamic_pointer_cast<AnyEObjectBag>(result->eGet(feature))->getBag();
-                    } catch (std::runtime_error& error) {
-                        std::cout << error.what() << std::endl;
-                        bag = std::make_shared<Bag<EObject>>();
-                    }
-                    for(const auto & entry : content[feature->getName()]){
-                        auto value = readValue(entry, feature->getEType()->getName());
-                        bag->add(value);
-                    }
-                    newValue = eAnyBag(bag, attributeTypeId);
-                    break;
-                }
-                auto value = readValue(content[feature->getName()], feature->getEType()->getName());
-                newValue = eAny(value, attributeTypeId, false);
+                //TODO: fix bags
                 break;
             }
         }
-        result->eSet(feature, newValue);
     }
     return result;
 }
@@ -281,7 +245,7 @@ template <typename T> T GenericApi::convert_to(const crow::json::rvalue& value){
 }
 
 template<typename T>
-Any GenericApi::readFeature(const std::shared_ptr<EObject>& object, const std::shared_ptr<EStructuralFeature>& feature, const crow::json::rvalue& content){
+std::shared_ptr<Any> GenericApi::readFeature(const std::shared_ptr<EObject>& object, const std::shared_ptr<EStructuralFeature>& feature, const crow::json::rvalue& content){
     auto attributeTypeId = object->eGet(feature)->getTypeId();
     auto isContainer = object->eGet(feature)->isContainer();
     if(isContainer){

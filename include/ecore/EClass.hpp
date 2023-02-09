@@ -60,7 +60,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EClass: virtual public EClassifier
+	class ECORE_API EClass : virtual public EClassifier
 	{
 		public:
  			EClass(const EClass &) {}
@@ -118,7 +118,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 			virtual std::shared_ptr<SubsetUnion<ecore::EStructuralFeature, ecore::EObject>> getEStructuralFeatures() const = 0;
 
 			//*********************************

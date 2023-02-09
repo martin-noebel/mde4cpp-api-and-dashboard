@@ -50,7 +50,7 @@ namespace libraryModel_ecore
 namespace libraryModel_ecore 
 {
 	
-	class LIBRARYMODEL_ECORE_API Picture: virtual public NamedElement
+	class LIBRARYMODEL_ECORE_API Picture : virtual public NamedElement
 	{
 		public:
  			Picture(const Picture &) {}

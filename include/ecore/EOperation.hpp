@@ -57,7 +57,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EOperation: virtual public ETypedElement
+	class ECORE_API EOperation : virtual public ETypedElement
 	{
 		public:
  			EOperation(const EOperation &) {}
@@ -79,13 +79,12 @@ namespace ecore
 			//*********************************
 			// Operations
 			//*********************************
-			
+			virtual int getOperationID() = 0;
 			virtual bool isOverrideOf(std::shared_ptr<ecore::EOperation> someOperation) const = 0;
 
 			//*********************************
 			// Attribute Getters & Setters
 			//*********************************
-			virtual int getOperationID() const = 0;
 
 			//*********************************
 			// Reference Getters & Setters
@@ -99,7 +98,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter
@@ -117,7 +115,6 @@ namespace ecore
 			//*********************************
 			// Attribute Members
 			//*********************************
-			int m_operationID= -1;
 			
 			//*********************************
 			// Reference Members

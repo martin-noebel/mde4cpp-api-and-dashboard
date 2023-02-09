@@ -52,7 +52,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API ETypeParameter: virtual public ENamedElement
+	class ECORE_API ETypeParameter : virtual public ENamedElement
 	{
 		public:
  			ETypeParameter(const ETypeParameter &) {}
@@ -82,7 +82,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter

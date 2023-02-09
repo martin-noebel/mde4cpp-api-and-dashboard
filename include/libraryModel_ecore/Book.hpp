@@ -53,7 +53,7 @@ namespace libraryModel_ecore
 namespace libraryModel_ecore 
 {
 	
-	class LIBRARYMODEL_ECORE_API Book: virtual public NamedElement
+	class LIBRARYMODEL_ECORE_API Book : virtual public NamedElement
 	{
 		public:
  			Book(const Book &) {}

@@ -12,8 +12,7 @@
 #include <string>
 // forward declarations
 
-class AnyObject;
-typedef std::shared_ptr<AnyObject> Any;
+class Any;
 
 //*********************************
 // generated Includes
@@ -55,7 +54,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EFactory: virtual public EModelElement
+	class ECORE_API EFactory : virtual public EModelElement
 	{
 		public:
  			EFactory(const EFactory &) {}
@@ -72,9 +71,9 @@ namespace ecore
 			//*********************************
 			// Operations
 			//*********************************
-			virtual std::string convertToString(std::shared_ptr<ecore::EDataType> eDataType,Any instanceValue) const = 0;
+			virtual std::string convertToString(std::shared_ptr<ecore::EDataType> eDataType, std::shared_ptr<Any> instanceValue) const = 0;
 			virtual std::shared_ptr<ecore::EObject> create(std::shared_ptr<ecore::EClass> eClass) const = 0;
-			virtual Any createFromString(std::shared_ptr<ecore::EDataType> eDataType,std::string literalValue) const = 0;
+			virtual std::shared_ptr<Any> createFromString(std::shared_ptr<ecore::EDataType> eDataType, std::string literalValue) const = 0;
 
 			//*********************************
 			// Attribute Getters & Setters
@@ -89,7 +88,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter

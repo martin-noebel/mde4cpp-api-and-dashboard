@@ -1,4 +1,6 @@
 #include "crow/crow_all.h"
+#include "abstractDataTypes/BaseContainerAny.hpp"
+#include "abstractDataTypes/BaseElement.hpp"
 #include "ecore/EClass.hpp"
 #include "libraryModel_ecore/libraryModel_ecoreFactory.hpp"
 #include "libraryModel_ecore/libraryModel_ecorePackage.hpp"
@@ -13,15 +15,14 @@ using namespace libraryModel_ecore;
 
 class ModelApi{
 public:
-    static std::shared_ptr<ModelApi> eInstance(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
-    crow::json::wvalue writeValue(const Any& any);
-    Any readValue(const crow::json::rvalue& content, const long& metaElementId);
+    static std::shared_ptr<ModelApi> eInstance(std::shared_ptr<libraryModel_ecoreFactory>& factory);
+    crow::json::wvalue writeValue(const std::shared_ptr<Any>& any);
+    std::shared_ptr<Any> readValue(const crow::json::rvalue& content, const long& metaElementId);
 
 private:
-    ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory, std::shared_ptr<libraryModel_ecorePackage>& package);
+    explicit ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory);
     template <typename T> T convert_to(const crow::json::rvalue& value);
     bool keyIsAvailable(const crow::json::rvalue& content, const std::string& key);
     std::shared_ptr<libraryModel_ecoreFactory> m_factory;
-    std::shared_ptr<libraryModel_ecorePackage> m_package;
-    std::map<std::string,Any> m_objects{};
+    std::map<std::string,std::shared_ptr<Any>> m_objects{};
 };
