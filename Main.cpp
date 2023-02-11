@@ -9,8 +9,8 @@ int main ()
     std::shared_ptr<MDE4CPPPlugin> plugin = libraryModel_ecorePlugin::eInstance();
 
     //Create API
-    std::shared_ptr<ModelApi> modelApi = ModelApi::eInstance(factory);
-    //std::shared_ptr<GenericApi> genericApi = GenericApi::eInstance(plugin);
+    //std::shared_ptr<ModelApi> modelApi = ModelApi::eInstance(factory);
+    std::shared_ptr<GenericApi> genericApi = GenericApi::eInstance(plugin);
 
     return 0;
 }

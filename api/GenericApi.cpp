@@ -137,7 +137,16 @@ crow::json::wvalue GenericApi::writeValue(const std::shared_ptr<ecore::EObject>&
                 // Object
             default:
             {
-                //TODO: fix bags
+                if(object->eGet(feature)->isContainer()){
+                    auto list = crow::json::wvalue();
+                    auto bag = std::dynamic_pointer_cast<EcoreContainerAny>(object->eGet(feature))->getAsEObjectContainer();
+                    for(int j=0;j<bag->size();j++){
+                        list[j] = writeValue(bag->at(j));
+                    }
+                    newValue = std::move(list);
+                    break;
+                }
+                newValue = writeValue(object->eGet(feature)->get<std::shared_ptr<EObject>>());
                 break;
             }
         }
@@ -225,7 +234,16 @@ std::shared_ptr<ecore::EObject> GenericApi::readValue(const crow::json::rvalue& 
             // Object
             default:
             {
-                //TODO: fix bags
+                if(result->eGet(feature)->isContainer()){
+                    auto bag = std::make_shared<Bag<EObject>>();
+                    for(const auto & entry : content[feature->getName()]){
+                        bag->add(readValue(entry, feature->getEType()->getName()));
+                    }
+                    result->eSet(feature, eEcoreContainerAny(bag, attributeTypeId));
+                    break;
+                }
+                auto value = readValue(content[feature->getName()], feature->getEType()->getName());
+                result->eSet(feature, eAny(value, attributeTypeId, false));
                 break;
             }
         }

@@ -1,6 +1,4 @@
 #include "crow/crow_all.h"
-#include "abstractDataTypes/BaseContainerAny.hpp"
-#include "abstractDataTypes/BaseElement.hpp"
 #include "ecore/EClass.hpp"
 #include "libraryModel_ecore/libraryModel_ecoreFactory.hpp"
 #include "libraryModel_ecore/libraryModel_ecorePackage.hpp"

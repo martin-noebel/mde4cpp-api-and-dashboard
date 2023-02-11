@@ -5,6 +5,7 @@
 #include "ecore/EClass.hpp"
 #include "ecore/EStructuralFeature.hpp"
 #include "ecore/EReference.hpp"
+#include "ecore/EcoreContainerAny.hpp"
 #include "pluginFramework/MDE4CPPPlugin.hpp"
 #include "ecore/ecorePackage.hpp"
 
