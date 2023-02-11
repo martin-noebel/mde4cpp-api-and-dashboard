@@ -106,7 +106,7 @@ namespace libraryModel_ecore
 			static const unsigned long LIBRARYMODEL_ATTRIBUTE_AUTHORS = 249338550;
 			static const unsigned long LIBRARYMODEL_ATTRIBUTE_BOOK = 1544868496;
 			
-			static const unsigned int LIBRARYMODEL_OPERATION_PRINTLIBRARY = 1310111868;
+			static const unsigned long LIBRARYMODEL_OPERATION_PRINTLIBRARY = 1310111868;
 			
 			//Class and Feature Getter
 			virtual std::shared_ptr<ecore::EClass> getLibraryModel_Class() const = 0;

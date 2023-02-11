@@ -52,7 +52,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EDataType: virtual public EClassifier
+	class ECORE_API EDataType : virtual public EClassifier
 	{
 		public:
  			EDataType(const EDataType &) {}
@@ -83,7 +83,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter

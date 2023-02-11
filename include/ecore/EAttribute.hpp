@@ -54,7 +54,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EAttribute: virtual public EStructuralFeature
+	class ECORE_API EAttribute : virtual public EStructuralFeature
 	{
 		public:
  			EAttribute(const EAttribute &) {}
@@ -86,7 +86,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter

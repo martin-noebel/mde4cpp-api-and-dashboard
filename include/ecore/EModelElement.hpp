@@ -51,7 +51,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EModelElement: virtual public EObject
+	class ECORE_API EModelElement : virtual public EObject
 	{
 		public:
  			EModelElement(const EModelElement &) {}
@@ -82,7 +82,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter

@@ -54,7 +54,7 @@ namespace ecore
 namespace ecore 
 {
 	
-	class ECORE_API EEnum: virtual public EDataType
+	class ECORE_API EEnum : virtual public EDataType
 	{
 		public:
  			EEnum(const EEnum &) {}
@@ -87,7 +87,6 @@ namespace ecore
 			//*********************************
 			// Union Reference Getters
 			//*********************************
-			virtual std::shared_ptr<Union<ecore::EObject>> getEContentUnion() const = 0;
 
 			//*********************************
 			// Container Getter
