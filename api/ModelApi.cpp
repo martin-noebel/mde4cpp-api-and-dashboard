@@ -11,7 +11,7 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
     crow::SimpleApp app;
 
     //Create function
-    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Post)([this](const crow::request& request, const std::string& className, const std::string& objectName){
+    CROW_ROUTE(app, "/objects/<string>/<string>").methods(crow::HTTPMethod::Post)([this](const crow::request& request, const std::string& className, const std::string& objectName){
         if(m_objects.find(objectName) != m_objects.end()){
             return crow::response(400, "Object already exists!");
         }
@@ -21,7 +21,7 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
     });
 
     //Read function
-    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Get)([this](const std::string& className, const std::string& objectName){
+    CROW_ROUTE(app, "/objects/<string>/<string>").methods(crow::HTTPMethod::Get)([this](const std::string& className, const std::string& objectName){
         if(m_objects.find(objectName) == m_objects.end()){
             return crow::response(404);
         }
@@ -30,7 +30,7 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
     });
 
     //Update function
-    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Put)([this](const crow::request& request, const std::string& className, const std::string& objectName){
+    CROW_ROUTE(app, "/objects/<string>/<string>").methods(crow::HTTPMethod::Put)([this](const crow::request& request, const std::string& className, const std::string& objectName){
         if(m_objects.find(objectName) == m_objects.end()){
             return crow::response(404);
         }
@@ -41,7 +41,7 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
     });
 
     //Delete function
-    CROW_ROUTE(app, "/<string>/<string>").methods(crow::HTTPMethod::Delete)([this](const std::string& className, const std::string& objectName){
+    CROW_ROUTE(app, "/objects/<string>/<string>").methods(crow::HTTPMethod::Delete)([this](const std::string& className, const std::string& objectName){
         if(m_objects.find(objectName) == m_objects.end()){
             return crow::response(404);
         }
@@ -50,7 +50,7 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
     });
 
     //create instance model
-    CROW_ROUTE(app, "/").methods(crow::HTTPMethod::Post)([this](const crow::request& request){
+    CROW_ROUTE(app, "/objects/").methods(crow::HTTPMethod::Post)([this](const crow::request& request){
         for(const auto & entry : crow::json::load(request.body)){
             auto object = readValue(entry, entry["ecore_type"].i());
             m_objects[entry["ecore_identifier"].s()] = object;
@@ -59,7 +59,7 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
     });
 
     //get instance model
-    CROW_ROUTE(app, "/").methods(crow::HTTPMethod::Get)([this](){
+    CROW_ROUTE(app, "/objects/").methods(crow::HTTPMethod::Get)([this](){
         crow::json::wvalue result;
         int i = 0;
         for(const auto & object : m_objects){
