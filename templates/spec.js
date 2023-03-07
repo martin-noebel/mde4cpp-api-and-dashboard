@@ -117,7 +117,7 @@ var spec =
         "tags": [
           "crud"
         ],
-        "summary": "Updates an existing object",
+        "summary": "Update an existing object",
         "operationId": "updateObject",
         "parameters": [
           {
