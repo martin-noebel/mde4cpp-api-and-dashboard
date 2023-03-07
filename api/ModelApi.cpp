@@ -50,7 +50,7 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
     });
 
     //create instance model
-    CROW_ROUTE(app, "/objects/").methods(crow::HTTPMethod::Post)([this](const crow::request& request){
+    CROW_ROUTE(app, "/objects").methods(crow::HTTPMethod::Post)([this](const crow::request& request){
         for(const auto & entry : crow::json::load(request.body)){
             auto object = readValue(entry, entry["ecore_type"].i());
             m_objects[entry["ecore_identifier"].s()] = object;
@@ -70,6 +70,17 @@ ModelApi::ModelApi(std::shared_ptr<libraryModel_ecoreFactory>& factory) {
             i++;
         }
         return crow::response(200, result);
+    });
+
+    //Swagger
+    CROW_ROUTE(app, "/<string>")([](const std::string& path){
+        std::string page;
+        if(path == "swagger"){
+            page = crow::mustache::load_text("index.html");
+        }else{
+            page = crow::mustache::load_text(path);
+        }
+        return crow::response(page);
     });
 
     app.port(8080).multithreaded().run();
